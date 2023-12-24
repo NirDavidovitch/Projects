@@ -1,6 +1,8 @@
 package gateway_server.command_factory;
 
-import gateway_server.commands.Print;
+import gateway_server.commands.RegCompany;
+import gateway_server.commands.IotUpdate;
+import gateway_server.commands.RegIot;
 import org.json.JSONObject;
 
 import java.io.File;
@@ -10,7 +12,10 @@ public class CommandsLoader {
 	private static final CommandFactory commandFactory = CommandFactory.getInstance();
 
 	public static void loadFunctionsFromDirectory() {
-		commandFactory.addCommand("Print", new Print());
+		// commandFactory.addCommand("Print", new Print());
+		commandFactory.addCommand("Update", new IotUpdate());
+		commandFactory.addCommand("RegCompany", new RegCompany());
+		commandFactory.addCommand("RegIot", new RegIot());
 	}
 
 	public static void loadFunctionsFromDirectory(String directoryPath) {

@@ -1,37 +1,39 @@
 package gateway_server.connection_manager;
 
-import gateway_server.connection_manager.tcp_udp_server.peer_exceptions.PeerCloseException;
-import gateway_server.connection_manager.tcp_udp_server.peer_exceptions.PeerReadException;
+import gateway_server.connection_manager.servers.peer_exceptions.PeerCloseException;
+import gateway_server.connection_manager.servers.peer_exceptions.PeerReadException;
 import org.json.JSONException;
 import org.json.JSONObject;
-import gateway_server.connection_manager.tcp_udp_server.*;
+import gateway_server.connection_manager.servers.*;
 
 import java.io.IOException;
 import java.util.function.Consumer;
 
 public class ConnectionManager<T> {
 	private final TcpUdpServer tcpUdpServer;
+	private final MyHttpServer httpServer;
 	private final Consumer<T> businessHandler;
 	private final ITranslator<T> translator;
 	private final int[] tcpPorts;
 	private final int[] udpPorts;
 
 	public ConnectionManager(int[] udpPorts, int[] tcpPorts, Consumer<JSONObject> businessHandler) throws IOException {
-		this.tcpPorts = tcpPorts;
-		this.udpPorts = udpPorts;
-		this.businessHandler = (Consumer<T>) businessHandler;
-		this.translator = (ITranslator<T>) new JSONTranslator();
-		tcpUdpServer = new TcpUdpServer(new RequestHandler());
+		this(udpPorts, tcpPorts, (Consumer<T>) businessHandler, (ITranslator<T>) new JSONTranslator());
 	}
 
+	/* constructor to the ConnectionManager in case the user wants to use custom translator (instead of JSON) */
 	public ConnectionManager(int[] udpPorts, int[] tcpPorts, Consumer<T> businessHandler, ITranslator<T> translator) throws IOException {
 		this.tcpPorts = tcpPorts;
 		this.udpPorts = udpPorts;
 		this.businessHandler = businessHandler;
 		this.translator = translator;
-		tcpUdpServer = new TcpUdpServer(new RequestHandler());
+
+		Consumer<IPeer> requestHandler = new RequestHandler();
+		this.tcpUdpServer = new TcpUdpServer(requestHandler);
+		this.httpServer = new MyHttpServer(8080, requestHandler);
 	}
 
+	/* runs the tcp/udp server (multiProtocolServer) on the given ports */
 	public void run() {
 		try {
 			for (int port : tcpPorts) {
@@ -43,6 +45,7 @@ public class ConnectionManager<T> {
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
+		httpServer.run();
 		tcpUdpServer.run();
 	}
 
