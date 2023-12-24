@@ -1,6 +1,6 @@
 # Projects
 
-- In this repository there are all the projects I made throughot my course, inluding projects both in C and Java.
+This repository includes project I made throught my course:
 
 - Projects in C:
     WatchDog
